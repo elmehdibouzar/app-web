@@ -1,0 +1,25 @@
+{{- if .Values.namespace.resourcequota.enabled -}}
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+ name: mem-cpu-quota
+ namespace: {{ .Values.namespace.name }}
+spec:
+  hard:
+  {{- if (eq .Values.namespace.size "medium") }}
+    requests.cpu: 6000m
+    requests.memory: 8Gi
+    limits.cpu: 6000m
+    limits.memory: 8Gi
+  {{- else if eq .Values.namespace.size "large" }}
+    requests.cpu: 6000m
+    requests.memory: 16Gi
+    limits.cpu: 6000m
+    limits.memory: 16Gi
+{{- else if eq .Values.namespace.size "xlarge" }}
+    requests.cpu: 6000m
+    requests.memory: 24Gi
+    limits.cpu: 6000m
+    limits.memory: 24Gi
+{{- end }}
+{{- end }}

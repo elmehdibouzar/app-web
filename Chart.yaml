@@ -1,0 +1,11 @@
+# The chart API version (required)
+apiVersion: v2
+# The name of the chart (required)
+name: ===NAME===
+# A SemVer 2 version (required)
+version: ===VERSION===
+#kubeVersion: A SemVer range of compatible Kubernetes versions (optional)
+#description: A single-sentence description of this project (optional)
+# The type of the chart (optional)
+type: application
+

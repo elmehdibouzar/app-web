@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-{{ .Values.application_name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: {{ .Values.application_name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.application_name }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ .Values.application_name }}
+    spec:
+      imagePullSecrets:
+      - name: {{ .Values.imagepullsecrets }}
+      serviceAccountName: sa-{{ .Values.trigramme }}
+      containers:
+        - name: {{ .Values.application_name }}
+        {{- if .Values.securityContext.enebled -}}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+        {{- if .Values.environmentVariables  }} 
+          env:      
+            {{- range $k, $v := .Values.environmentVariables }}
+            - name: {{ $k }}
+              value: "{{ $v }}"
+            {{- end }}
+          {{- end }}
+        {{- if .Values.secret.enabled  }} 
+          envFrom:      
+            - secretRef:
+               name: {{ .Values.secret.name }}
+          {{- end }}
+      {{- if .Values.probes.enabled -}}     
+        {{- with .Values.probes.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.probes.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
